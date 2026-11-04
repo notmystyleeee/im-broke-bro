@@ -1,571 +1,415 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>下班倒數與今日賺錢計算機</title>
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      --card-bg: rgba(255, 255, 255, 0.9);
-      --text-main: #2d3748;
-      --text-sub: #718096;
-      --accent-color: #3182ce;
-      --money-color: #2b6cb0;
-      --progress-bg: #edf2f7;
-      --progress-fill: linear-gradient(90deg, #4299e1, #48bb78);
-      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      --input-bg: #ffffff;
-      --border-color: #e2e8f0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你今日返咗工未</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --sub-text: #666666;
+            --accent-color: #007aff;
+            --progress-bg: #e0e0e0;
+            --progress-fill: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
 
-    [data-theme="dark"] {
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      --card-bg: rgba(30, 41, 59, 0.85);
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
-      --accent-color: #38bdf8;
-      --money-color: #4ade80;
-      --progress-bg: #334155;
-      --progress-fill: linear-gradient(90deg, #38bdf8, #4ade80);
-      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-      --input-bg: #1e293b;
-      --border-color: #475569;
-    }
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #f5f5f7;
+            --sub-text: #a1a1a6;
+            --accent-color: #0a84ff;
+            --progress-bg: #333333;
+            --progress-fill: linear-gradient(90deg, #00c6ff, #0072ff);
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-    body {
-      min-height: 100vh;
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
 
-    .container {
-      width: 100%;
-      max-width: 480px;
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border-radius: 24px;
-      padding: 28px;
-      box-shadow: var(--shadow);
-      position: relative;
-    }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
+        .header h1 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
 
-    .header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
 
-    .icon-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.25rem;
-      color: var(--text-sub);
-      padding: 6px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+        .display-section {
+            text-align: center;
+            margin-bottom: 25px;
+        }
 
-    .icon-btn:hover {
-      background: rgba(0,0,0,0.05);
-      color: var(--text-main);
-    }
+        .money-title {
+            font-size: 0.9rem;
+            color: var(--sub-text);
+            margin-bottom: 5px;
+        }
 
-    .main-display {
-      text-align: center;
-      margin-bottom: 24px;
-    }
+        .money-amount {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            font-variant-numeric: tabular-nums;
+        }
 
-    .label {
-      font-size: 0.9rem;
-      color: var(--text-sub);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+        .rate-info {
+            font-size: 0.85rem;
+            color: var(--sub-text);
+            margin-top: 4px;
+            font-weight: 500;
+        }
 
-    .countdown-box {
-      font-size: 2.75rem;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-      color: var(--accent-color);
-      margin-bottom: 16px;
-    }
+        .countdown-title {
+            font-size: 0.9rem;
+            color: var(--sub-text);
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
 
-    .money-box {
-      background: rgba(0, 0, 0, 0.03);
-      padding: 16px;
-      border-radius: 16px;
-      margin-bottom: 20px;
-    }
+        .countdown-timer {
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
 
-    [data-theme="dark"] .money-box {
-      background: rgba(255, 255, 255, 0.03);
-    }
+        .progress-container {
+            margin: 20px 0;
+        }
 
-    .money-amount {
-      font-size: 2.25rem;
-      font-weight: 800;
-      color: var(--money-color);
-      font-variant-numeric: tabular-nums;
-    }
+        .progress-bar {
+            height: 14px;
+            background-color: var(--progress-bg);
+            border-radius: 7px;
+            overflow: hidden;
+        }
 
-    .money-amount span {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-right: 4px;
-    }
+        .progress-fill {
+            height: 100%;
+            background: var(--progress-fill);
+            width: 0%;
+            transition: width 0.2s ease-out;
+        }
 
-    /* 鼓勵字句展示框 */
-    .quote-box {
-      background: var(--progress-bg);
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text-main);
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      margin-bottom: 24px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-    }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--sub-text);
+            margin-top: 6px;
+        }
 
-    .progress-section {
-      margin-bottom: 24px;
-    }
+        .quote-box {
+            background-color: rgba(0, 122, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px 15px;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-top: 15px;
+        }
 
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
+        /* 設定彈窗 */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
 
-    .progress-bar-bg {
-      height: 12px;
-      background: var(--progress-bg);
-      border-radius: 6px;
-      overflow: hidden;
-    }
+        .settings-content {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 380px;
+        }
 
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--progress-fill);
-      border-radius: 6px;
-      transition: width 0.3s ease;
-    }
+        .settings-content h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
 
-    /* Modal / Settings Panel */
-    .modal-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--card-bg);
-      backdrop-filter: blur(15px);
-      border-radius: 24px;
-      padding: 24px;
-      display: none;
-      flex-direction: column;
-      z-index: 10;
-    }
+        .form-group {
+            margin-bottom: 12px;
+        }
 
-    .modal-overlay.active {
-      display: flex;
-    }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--sub-text);
+            margin-bottom: 4px;
+        }
 
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
 
-    .form-group {
-      margin-bottom: 14px;
-    }
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
 
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      margin-bottom: 4px;
-      font-weight: 500;
-    }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
 
-    .form-row {
-      display: flex;
-      gap: 10px;
-    }
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
 
-    .form-control {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      background: var(--input-bg);
-      color: var(--text-main);
-      font-size: 0.95rem;
-      outline: none;
-    }
-
-    .form-control:focus {
-      border-color: var(--accent-color);
-    }
-
-    .btn-save {
-      margin-top: auto;
-      width: 100%;
-      padding: 12px;
-      background: var(--accent-color);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    .btn-save:hover {
-      opacity: 0.9;
-    }
-  </style>
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="header">
-      <h1>⏰ 放工計時器</h1>
-      <div style="display: flex; gap: 4px;">
-        <button class="icon-btn" id="theme-btn" title="切換主題">🌙</button>
-        <button class="icon-btn" id="settings-btn" title="設定">⚙️</button>
-      </div>
-    </div>
-
-    <div class="main-display">
-      <div class="label">距離放工仲有</div>
-      <div class="countdown-box" id="countdown-text">00:00:00</div>
-
-      <div class="money-box">
-        <div class="label">今日已賺金額</div>
-        <div class="money-amount"><span>HK$</span><span id="money-text">0.00</span></div>
-      </div>
-    </div>
-
-    <!-- 根據百分比解鎖嘅字句 -->
-    <div class="quote-box" id="quote-text">
-      ⏳ 準備好今日嘅賺錢之旅未？
-    </div>
-
-    <div class="progress-section">
-      <div class="progress-header">
-        <span>今日工作進度</span>
-        <span id="progress-percent">0%</span>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progress-fill"></div>
-      </div>
-    </div>
-
-    <!-- 設定 Modal -->
-    <div class="modal-overlay" id="settings-modal">
-      <div class="modal-header">
-        <h2>設定參數</h2>
-        <button class="icon-btn" id="close-settings-btn">✖</button>
-      </div>
-
-      <div class="form-group">
-        <label>薪酬類型</label>
-        <select class="form-control" id="salary-type">
-          <option value="monthly">月薪 (HKD)</option>
-          <option value="daily">日薪 (HKD)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label id="salary-label">月薪金額</label>
-        <input type="number" class="form-control" id="salary-amount" value="25000">
-      </div>
-
-      <div class="form-group" id="work-days-group">
-        <label>本月工作天數 (天)</label>
-        <input type="number" class="form-control" id="work-days" value="22">
-      </div>
-
-      <div class="form-row">
-        <div class="form-group" style="flex:1;">
-          <label>上班時間</label>
-          <input type="time" class="form-control" id="start-time" value="09:00">
+    <div class="container">
+        <div class="header">
+            <button class="icon-btn" id="themeToggleBtn">🌙</button>
+            <h1>打工仔下班計時器</h1>
+            <button class="icon-btn" id="openSettingsBtn">⚙️</button>
         </div>
-        <div class="form-group" style="flex:1;">
-          <label>下班時間</label>
-          <input type="time" class="form-control" id="end-time" value="18:00">
-        </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group" style="flex:1;">
-          <label>午休開始</label>
-          <input type="time" class="form-control" id="lunch-start" value="13:00">
-        </div>
-        <div class="form-group" style="flex:1;">
-          <label>午休結束</label>
-          <input type="time" class="form-control" id="lunch-end" value="14:00">
-        </div>
-      </div>
+        <div class="display-section">
+            <div class="money-title">今日累計已賺取</div>
+            <div class="money-amount" id="earnedMoney">$0.000</div>
+            <div class="rate-info" id="perSecondRate">每秒賺取: $0.0000</div>
 
-      <button class="btn-save" id="save-settings-btn">儲存設定</button>
+            <div class="countdown-title">距離下班仲有</div>
+            <div class="countdown-timer" id="countdownTimer">00:00:00</div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text">
+                <span>工時進度</span>
+                <span id="progressPercent">0.0%</span>
+            </div>
+        </div>
+
+        <div class="quote-box" id="quoteText">
+            準備好今日返工未？
+        </div>
     </div>
-  </div>
 
-  <script>
-    // 預設設定
-    const DEFAULT_CONFIG = {
-      salaryType: 'monthly',
-      salaryAmount: 25000,
-      workDays: 22,
-      startTime: '09:00',
-      endTime: '18:00',
-      lunchStart: '13:00',
-      lunchEnd: '14:00',
-      theme: 'light'
-    };
+    <!-- 設定彈窗 -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <h2>設定薪資與時間</h2>
+            <div class="form-group">
+                <label>月薪 (HKD)</label>
+                <input type="number" id="monthlySalaryInput" value="20000">
+            </div>
+            <div class="form-group">
+                <label>本月工作天數</label>
+                <input type="number" id="workDaysInput" value="22">
+            </div>
+            <div class="form-group">
+                <label>上班時間</label>
+                <input type="time" id="startTimeInput" value="09:00">
+            </div>
+            <div class="form-group">
+                <label>下班時間</label>
+                <input type="time" id="endTimeInput" value="18:00">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="closeSettingsBtn">取消</button>
+                <button class="btn btn-primary" id="saveSettingsBtn">儲存</button>
+            </div>
+        </div>
+    </div>
 
-    let config = { ...DEFAULT_CONFIG };
+    <script>
+        // 預設設定
+        const defaultSettings = {
+            monthlySalary: 20000,
+            workDays: 22,
+            startTime: "09:00",
+            endTime: "18:00",
+            theme: "light"
+        };
 
-    // DOM 元素
-    const countdownEl = document.getElementById('countdown-text');
-    const moneyEl = document.getElementById('money-text');
-    const progressFillEl = document.getElementById('progress-fill');
-    const progressPercentEl = document.getElementById('progress-percent');
-    const quoteEl = document.getElementById('quote-text');
-    
-    const settingsModal = document.getElementById('settings-modal');
-    const settingsBtn = document.getElementById('settings-btn');
-    const closeSettingsBtn = document.getElementById('close-settings-btn');
-    const saveSettingsBtn = document.getElementById('save-settings-btn');
-    const themeBtn = document.getElementById('theme-btn');
+        // 載入 LocalStorage
+        let settings = JSON.parse(localStorage.getItem("workTimerSettings")) || defaultSettings;
 
-    const salaryTypeInput = document.getElementById('salary-type');
-    const salaryLabel = document.getElementById('salary-label');
-    const salaryAmountInput = document.getElementById('salary-amount');
-    const workDaysGroup = document.getElementById('work-days-group');
-    const workDaysInput = document.getElementById('work-days');
-    const startTimeInput = document.getElementById('start-time');
-    const endTimeInput = document.getElementById('end-time');
-    const lunchStartInput = document.getElementById('lunch-start');
-    const lunchEndInput = document.getElementById('lunch-end');
+        // DOM 元素
+        const earnedMoneyEl = document.getElementById("earnedMoney");
+        const perSecondRateEl = document.getElementById("perSecondRate");
+        const countdownTimerEl = document.getElementById("countdownTimer");
+        const progressFillEl = document.getElementById("progressFill");
+        const progressPercentEl = document.getElementById("progressPercent");
+        const quoteTextEl = document.getElementById("quoteText");
+        
+        const settingsModal = document.getElementById("settingsModal");
+        const themeToggleBtn = document.getElementById("themeToggleBtn");
 
-    // 本地儲存載入
-    function loadConfig() {
-      const saved = localStorage.getItem('offwork_countdown_config');
-      if (saved) {
-        try {
-          config = { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
-        } catch (e) {
-          console.error(e);
+        // 廣東話鼓勵語句門檻
+        function getQuote(percent) {
+            if (percent >= 100) return "🎉 下班啦！躺平時間到！明天再戰！";
+            if (percent >= 75) return "🛍️ 賺到買衫錢啦，再堅持多陣就下班！";
+            if (percent >= 55) return "🍣 已經賺到壽司郎黑碟！繼續加油！";
+            if (percent >= 35) return "☕ 咖啡錢搞掂，下半場精神晒！";
+            if (percent >= 20) return "🍔 成功賺返個麥當勞加大套餐！";
+            if (percent >= 10) return "🍋 凍檸茶加$2成功落袋！加油！";
+            return "💪 返工打卡！開始今日賺錢大計！";
         }
-      }
-      applyTheme(config.theme);
-      populateForm();
-    }
 
-    function saveConfig() {
-      config.salaryType = salaryTypeInput.value;
-      config.salaryAmount = parseFloat(salaryAmountInput.value) || 0;
-      config.workDays = parseFloat(workDaysInput.value) || 22;
-      config.startTime = startTimeInput.value;
-      config.endTime = endTimeInput.value;
-      config.lunchStart = lunchStartInput.value;
-      config.lunchEnd = lunchEndInput.value;
+        // 主更新邏輯
+        function updateCalculator() {
+            const now = new Date();
+            const [startH, startM] = settings.startTime.split(":").map(Number);
+            const [endH, endM] = settings.endTime.split(":").map(Number);
 
-      localStorage.setItem('offwork_countdown_config', JSON.stringify(config));
-      settingsModal.classList.remove('active');
-      updateDisplay();
-    }
+            const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startH, startM, 0);
+            const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM, 0);
 
-    function populateForm() {
-      salaryTypeInput.value = config.salaryType;
-      salaryAmountInput.value = config.salaryAmount;
-      workDaysInput.value = config.workDays;
-      startTimeInput.value = config.startTime;
-      endTimeInput.value = config.endTime;
-      lunchStartInput.value = config.lunchStart;
-      lunchEndInput.value = config.lunchEnd;
-      toggleSalaryTypeUI();
-    }
+            // 日薪與每秒薪資計算
+            const dailySalary = settings.monthlySalary / settings.workDays;
+            const totalWorkSeconds = (endTime - startTime) / 1000;
+            const salaryPerSecond = totalWorkSeconds > 0 ? dailySalary / totalWorkSeconds : 0;
 
-    function toggleSalaryTypeUI() {
-      if (salaryTypeInput.value === 'monthly') {
-        salaryLabel.textContent = '月薪金額';
-        workDaysGroup.style.display = 'block';
-      } else {
-        salaryLabel.textContent = '日薪金額';
-        workDaysGroup.style.display = 'none';
-      }
-    }
+            // 顯示每秒賺幾多錢 (精確至小數點後 4 位)
+            perSecondRateEl.innerText = `每秒賺取: $${salaryPerSecond.toFixed(4)}`;
 
-    function applyTheme(theme) {
-      config.theme = theme;
-      if (theme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        themeBtn.textContent = '☀️';
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-        themeBtn.textContent = '🌙';
-      }
-    }
+            if (now < startTime) {
+                // 未上班
+                earnedMoneyEl.innerText = "$0.000";
+                const diff = Math.floor((startTime - now) / 1000);
+                countdownTimerEl.innerText = formatTime(diff);
+                progressFillEl.style.width = "0%";
+                progressPercentEl.innerText = "0.0%";
+                quoteTextEl.innerText = "⏳ 仲未到上班時間，準備好賺錢未？";
+            } else if (now >= endTime) {
+                // 已下班
+                earnedMoneyEl.innerText = `$${dailySalary.toFixed(3)}`;
+                countdownTimerEl.innerText = "00:00:00";
+                progressFillEl.style.width = "100%";
+                progressPercentEl.innerText = "100.0%";
+                quoteTextEl.innerText = getQuote(100);
+            } else {
+                // 上班中
+                const elapsedSeconds = (now - startTime) / 1000;
+                const earned = elapsedSeconds * salaryPerSecond;
+                earnedMoneyEl.innerText = `$${earned.toFixed(3)}`;
 
-    // 將 HH:MM 轉化為今日的 Date 物件
-    function parseTimeToToday(timeStr) {
-      const [h, m] = timeStr.split(':').map(Number);
-      const d = new Date();
-      d.setHours(h, m, 0, 0);
-      return d;
-    }
+                const remainingSeconds = Math.floor((endTime - now) / 1000);
+                countdownTimerEl.innerText = formatTime(remainingSeconds);
 
-    // 更新鼓勵字句 (根據百分比)
-    function updateQuote(percentage) {
-      if (percentage >= 100) {
-        quoteEl.textContent = '🛋️ 放工啦！快樂時間到，即刻躺平！';
-      } else if (percentage >= 75) {
-        quoteEl.textContent = '👕 可以上網睇吓想買吓咩衫！';
-      } else if (percentage >= 55) {
-        quoteEl.textContent = '🍣 今晚食壽司郎可以拎多兩碟黑碟！';
-      } else if (percentage >= 35) {
-        quoteEl.textContent = '☕ 今日杯咖啡已經賺返返嚟啦！';
-      } else if (percentage >= 20) {
-        quoteEl.textContent = '🍔 麥當勞加大唔肉痛啦！';
-      } else if (percentage >= 10) {
-        quoteEl.textContent = '🍋 凍檸茶加 $2 蚊完全冇問題！';
-      } else {
-        quoteEl.textContent = '💪🏻 啱啱開始，加油努力賺錢！';
-      }
-    }
-
-    function updateDisplay() {
-      const now = new Date();
-      const start = parseTimeToToday(config.startTime);
-      const end = parseTimeToToday(config.endTime);
-      const lunchStart = parseTimeToToday(config.lunchStart);
-      const lunchEnd = parseTimeToToday(config.lunchEnd);
-
-      // 計算今日工作秒數 (扣除午休)
-      let totalWorkSeconds = (end - start) / 1000;
-      let lunchSeconds = 0;
-      if (lunchEnd > lunchStart && lunchStart >= start && lunchEnd <= end) {
-        lunchSeconds = (lunchEnd - lunchStart) / 1000;
-        totalWorkSeconds -= lunchSeconds;
-      }
-      if (totalWorkSeconds <= 0) totalWorkSeconds = 1;
-
-      // 計算日薪及每秒薪水
-      const dailySalary = config.salaryType === 'monthly' 
-        ? (config.salaryAmount / (config.workDays || 22)) 
-        : config.salaryAmount;
-      const salaryPerSecond = dailySalary / totalWorkSeconds;
-
-      // 未到上班時間
-      if (now < start) {
-        countdownEl.textContent = formatCountdown((end - now) / 1000);
-        moneyEl.textContent = '0.00';
-        progressFillEl.style.width = '0%';
-        progressPercentEl.textContent = '0%';
-        updateQuote(0);
-        return;
-      }
-
-      // 已下班
-      if (now >= end) {
-        countdownEl.textContent = '🎉 放工啦！';
-        moneyEl.textContent = dailySalary.toFixed(2);
-        progressFillEl.style.width = '100%';
-        progressPercentEl.textContent = '100%';
-        updateQuote(100);
-        return;
-      }
-
-      // 計算實際已工作秒數 (考慮午休時間)
-      let workedSeconds = (now - start) / 1000;
-      if (now > lunchStart) {
-        if (now <= lunchEnd) {
-          // 正處於午休時間
-          workedSeconds = (lunchStart - start) / 1000;
-        } else {
-          // 已過午休
-          workedSeconds -= lunchSeconds;
+                const percent = (elapsedSeconds / totalWorkSeconds) * 100;
+                progressFillEl.style.width = `${percent.toFixed(1)}%`;
+                progressPercentEl.innerText = `${percent.toFixed(1)}%`;
+                quoteTextEl.innerText = getQuote(percent);
+            }
         }
-      }
 
-      const earnedMoney = Math.min(dailySalary, Math.max(0, workedSeconds * salaryPerSecond));
-      const percentage = Math.min(100, Math.max(0, (workedSeconds / totalWorkSeconds) * 100));
-      const remainingSeconds = (end - now) / 1000;
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
 
-      // 更新畫面
-      countdownEl.textContent = formatCountdown(remainingSeconds);
-      moneyEl.textContent = earnedMoney.toFixed(2);
-      progressFillEl.style.width = percentage.toFixed(1) + '%';
-      progressPercentEl.textContent = percentage.toFixed(1) + '%';
+        // 主題切換
+        function applyTheme(theme) {
+            document.documentElement.setAttribute("data-theme", theme);
+            themeToggleBtn.innerText = theme === "dark" ? "☀️" : "🌙";
+        }
 
-      // 根據即時進度更新鼓勵字句
-      updateQuote(percentage);
-    }
+        themeToggleBtn.addEventListener("click", () => {
+            settings.theme = settings.theme === "dark" ? "light" : "dark";
+            applyTheme(settings.theme);
+            saveSettingsToStorage();
+        });
 
-    function formatCountdown(totalSecs) {
-      const h = Math.floor(totalSecs / 3600).toString().padStart(2, '0');
-      const m = Math.floor((totalSecs % 3600) / 60).toString().padStart(2, '0');
-      const s = Math.floor(totalSecs % 60).toString().padStart(2, '0');
-      return `${h}:${m}:${s}`;
-    }
+        // 設定視窗開關
+        document.getElementById("openSettingsBtn").addEventListener("click", () => {
+            document.getElementById("monthlySalaryInput").value = settings.monthlySalary;
+            document.getElementById("workDaysInput").value = settings.workDays;
+            document.getElementById("startTimeInput").value = settings.startTime;
+            document.getElementById("endTimeInput").value = settings.endTime;
+            settingsModal.style.display = "flex";
+        });
 
-    // 事件監聽
-    settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
-    closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('active'));
-    saveSettingsBtn.addEventListener('click', saveConfig);
-    salaryTypeInput.addEventListener('change', toggleSalaryTypeUI);
+        document.getElementById("closeSettingsBtn").addEventListener("click", () => {
+            settingsModal.style.display = "none";
+        });
 
-    themeBtn.addEventListener('click', () => {
-      const newTheme = config.theme === 'dark' ? 'light' : 'dark';
-      applyTheme(newTheme);
-      config.theme = newTheme;
-      localStorage.setItem('offwork_countdown_config', JSON.stringify(config));
-    });
+        document.getElementById("saveSettingsBtn").addEventListener("click", () => {
+            settings.monthlySalary = parseFloat(document.getElementById("monthlySalaryInput").value) || 0;
+            settings.workDays = parseInt(document.getElementById("workDaysInput").value) || 1;
+            settings.startTime = document.getElementById("startTimeInput").value;
+            settings.endTime = document.getElementById("endTimeInput").value;
 
-    // 初始化與時鐘循環
-    loadConfig();
-    updateDisplay();
-    setInterval(updateDisplay, 1000);
-  </script>
+            saveSettingsToStorage();
+            settingsModal.style.display = "none";
+            updateCalculator();
+        });
+
+        function saveSettingsToStorage() {
+            localStorage.setItem("workTimerSettings", JSON.stringify(settings));
+        }
+
+        // 初始化
+        applyTheme(settings.theme);
+        updateCalculator();
+        setInterval(updateCalculator, 100); // 每 0.1 秒更新一次以確保流暢感
+    </script>
 </body>
 </html>
