@@ -221,7 +221,7 @@
     <div class="container">
         <div class="header">
             <button class="icon-btn" id="themeToggleBtn">🌙</button>
-            <h1>打工仔下班計時器</h1>
+            <h1>社畜收工計時器</h1>
             <button class="icon-btn" id="openSettingsBtn">⚙️</button>
         </div>
 
@@ -230,7 +230,7 @@
             <div class="money-amount" id="earnedMoney">$0.000</div>
             <div class="rate-info" id="perSecondRate">每秒賺取: $0.0000</div>
 
-            <div class="countdown-title">距離下班仲有</div>
+            <div class="countdown-title">距離收工仲有</div>
             <div class="countdown-timer" id="countdownTimer">00:00:00</div>
         </div>
 
@@ -302,12 +302,12 @@
 
         // 廣東話鼓勵語句門檻
         function getQuote(percent) {
-            if (percent >= 100) return "🎉 下班啦！躺平時間到！明天再戰！";
-            if (percent >= 75) return "🛍️ 賺到買衫錢啦，再堅持多陣就下班！";
-            if (percent >= 55) return "🍣 已經賺到壽司郎黑碟！繼續加油！";
-            if (percent >= 35) return "☕ 咖啡錢搞掂，下半場精神晒！";
-            if (percent >= 20) return "🍔 成功賺返個麥當勞加大套餐！";
-            if (percent >= 10) return "🍋 凍檸茶加$2成功落袋！加油！";
+            if (percent >= 100) return "🎉 收工啦！躺平時間到！See you tomorrow！";
+            if (percent >= 75) return "🛍️ 上網睇吓買咩衫，再堅持多陣！";
+            if (percent >= 55) return "🍣 今晚食個壽司郎再叫多2碟黑碟都冇問題！";
+            if (percent >= 35) return "☕ 今朝杯咖啡錢搞掂，下半場精神晒！";
+            if (percent >= 20) return "🍔 成功賺返個麥當勞加大！";
+            if (percent >= 10) return "🍋 可以加$2叫杯凍檸茶！加油！";
             return "💪 返工打卡！開始今日賺錢大計！";
         }
 
